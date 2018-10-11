@@ -174,10 +174,20 @@ void post_parse(SharedResource &r) {
   }
  }
 
- if(opt[ARG_SRV].hits() == 0) {
-  if(opt[CHR(OPT_USR)].hits() == 0 or opt[CHR(OPT_USR)].str().find('@') == string::npos)
-   { cerr << "error: smtp server is required but not provided" << endl; exit(RC_MISSMTP); }
-  opt[ARG_SRV] = "smtp." + opt[CHR(OPT_USR)].str().substr(opt[CHR(OPT_USR)].str().find('@')+1);
+ if(opt[ARG_SRV].hits() == 0) {                                 // smtp server is missed, recover:
+  if(opt[CHR(OPT_USR)].hits() > 0 and opt[CHR(OPT_USR)].str().find('@') != string::npos) {
+   opt[ARG_SRV] = "smtp." + opt[CHR(OPT_USR)].str().substr(opt[CHR(OPT_USR)].str().find('@')+1);
+   DBG(0) DOUT() << "recovered smtp from '-u' option: " << opt[ARG_SRV] << endl;
+   return;
+  }
+  auto at_pos = sm.from().find('@');                            // if not succeeded from -u, try
+  if(not sm.from().empty() and at_pos != string::npos) {        // recovering from -H 'from: ..'
+   opt[ARG_SRV] = "smtp." + sm.from().substr(at_pos+1, sm.from().size()-at_pos-2);
+   DBG(0) DOUT() << "recovered smtp from 'From:' header: " << opt[ARG_SRV] << endl;
+   return;
+  }
+  cerr << "error: smtp server is required but not provided" << endl;
+  exit(RC_MISSMTP);
  }
 }
 
@@ -218,11 +228,6 @@ void parse_headers(SharedResource &r) {
 
  if(sm.from().empty())                                          // -H 'From: ...' is not given
   try_recovering_from(r);                                       // then recover from -u
- else                                                           // -H 'From: ...' is present
-  if(opt[CHR(OPT_USR)].hits() == 0) {                           // but -u is not given
-   opt[CHR(OPT_USR)] = sm.from().substr(1, sm.from().size()-2);
-   DBG(0) DOUT() << "recovered username: " << opt[CHR(OPT_USR)].str() << endl;
-  }
 }
 
 
@@ -257,11 +262,11 @@ vector<string> split_by(char dlm, const string &str) {
 
 
 void try_recovering_from(SharedResource &r) {
- // recover header 'From' from username and server
+ // recover header 'From' from username and if required from smtp server too
  REVEAL(r, opt, sm, DBG())
 
  if(opt[CHR(OPT_USR)].str().empty()) return;
- if(opt[CHR(OPT_USR)].str().find('@') != string::npos)          // -u contains '@'
+ if(opt[CHR(OPT_USR)].str().find('@') != string::npos)          // -u contains '@', quick recovery:
   { sm.from(opt[CHR(OPT_USR)].str()); return; }                 // setup 'From:' from -u
 
  string domain;                                                 // extract domain from server param.
