@@ -153,11 +153,11 @@ void post_parse(SharedResource &r) {
  REVEAL(r, opt, sm, DBG())
  DBG(0) DOUT() << "begin processing options"<< endl;
 
- append_email_header(CurlSmtp::To, opt[ARG_TO].str(), r);
+ append_email_header(CurlSmtp::To, opt[ARG_TO].str(), r);       // append header 'To' from arg[0]
  if(sm.to().empty())
   { cerr << "error: header 'To' must be a valid email" << endl; exit(RC_INVTO); }
 
- if(opt[CHR(OPT_SBJ)].hits() > 0)
+ if(opt[CHR(OPT_SBJ)].hits() > 0)                               // append subj (if given)
   sm.subject(opt[CHR(OPT_SBJ)].str());
 
  parse_headers(r);
@@ -201,23 +201,28 @@ void parse_headers(SharedResource &r) {
  // process all -H options
  REVEAL(r, opt, sm, DBG())
 
- for(const auto &opt_hdr: opt[CHR(OPT_APH)]) {
+ for(const auto &opt_hdr: opt[CHR(OPT_APH)]) {                  // go over all -H options
   auto header = match_header(opt_hdr.substr(0, opt_hdr.find(':')));
 
-  if(header AMONG(CurlSmtp::Date, CurlSmtp::end_of_headers))
+  if(header AMONG(CurlSmtp::Date, CurlSmtp::end_of_headers))    // -H "Date: ..." is unsupported
    { cerr << "fail: unrecognized header in '" << opt_hdr << "', ignoring" << endl; continue; }
 
-  if(header AMONG(CurlSmtp::From, CurlSmtp::Subject)) {
-   sm.add_header(header, trim_spaces(opt_hdr.substr(opt_hdr.find(':')+1)));
+  if(header AMONG(CurlSmtp::From, CurlSmtp::Subject)) {         // -H "From:..." & -H "Subject:..."
+   sm.add_header(header, trim_spaces(opt_hdr.substr(opt_hdr.find(':')+1))); // are overridable
    DBG(1) DOUT() << "appended '" << ENUMS(CurlSmtp::Headers, header) << "': "
                  << trim_spaces(opt_hdr.substr(opt_hdr.find(':')+1)) << endl;
   }
   else                                                          // must be either to/cc/bcc
-   append_email_header(header, opt_hdr.substr(opt_hdr.find(':')+1), r);
+   append_email_header(header, opt_hdr.substr(opt_hdr.find(':')+1), r); // those are append-able
  }
 
- if(sm.from().empty())
-  try_recovering_from(r);
+ if(sm.from().empty())                                          // -H 'From: ...' is not given
+  try_recovering_from(r);                                       // then recover from -u
+ else                                                           // -H 'From: ...' is present
+  if(opt[CHR(OPT_USR)].hits() == 0) {                           // but -u is not given
+   opt[CHR(OPT_USR)] = sm.from().substr(1, sm.from().size()-2);
+   DBG(0) DOUT() << "recovered username: " << opt[CHR(OPT_USR)].str() << endl;
+  }
 }
 
 
