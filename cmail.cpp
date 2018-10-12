@@ -174,19 +174,19 @@ void post_parse(SharedResource &r) {
   if(opt[CHR(OPT_USR)].hits() == 0) {                           // -u is not given
    if(sm.from().empty())                                        // header 'From:' is empty too
     { cerr << "error: username is required but not provided" << endl; exit(RC_MISSUSR); }
-   opt[CHR(OPT_USR)] = sm.from().substr(1, sm.from().size()-2); // recover username from 'From'
+   opt[CHR(OPT_USR)] = sm.from().substr(1, sm.from().size() - 2);   // recover username from 'From'
   }
  }
 
  if(opt[ARG_SRV].hits() == 0) {                                 // smtp server is missed, recover:
   if(opt[CHR(OPT_USR)].hits() > 0 and opt[CHR(OPT_USR)].str().find('@') != string::npos) {
-   opt[ARG_SRV] = "smtp." + opt[CHR(OPT_USR)].str().substr(opt[CHR(OPT_USR)].str().find('@')+1);
+   opt[ARG_SRV] = "smtp." + opt[CHR(OPT_USR)].str().substr(opt[CHR(OPT_USR)].str().find('@') + 1);
    DBG(0) DOUT() << "recovered smtp from '-u' option: " << opt[ARG_SRV] << endl;
    return;
   }
   auto at_pos = sm.from().find('@');                            // if not succeeded from -u, try
   if(not sm.from().empty() and at_pos != string::npos) {        // recovering from -H 'from: ..'
-   opt[ARG_SRV] = "smtp." + sm.from().substr(at_pos+1, sm.from().size()-at_pos-2);
+   opt[ARG_SRV] = "smtp." + sm.from().substr(at_pos + 1, sm.from().size() - at_pos - 2);
    DBG(0) DOUT() << "recovered smtp from 'From:' header: " << opt[ARG_SRV] << endl;
    return;
   }
@@ -222,12 +222,12 @@ void parse_headers(SharedResource &r) {
    { cerr << "fail: unrecognized header in '" << opt_hdr << "', ignoring" << endl; continue; }
 
   if(header AMONG(CurlSmtp::From, CurlSmtp::Subject)) {         // -H "From:..." & -H "Subject:..."
-   sm.add_header(header, trim_spaces(opt_hdr.substr(opt_hdr.find(':')+1))); // are overridable
+   sm.add_header(header, trim_spaces(opt_hdr.substr(opt_hdr.find(':') + 1)));   // are overridable
    DBG(1) DOUT() << "appended '" << ENUMS(CurlSmtp::Headers, header) << "': "
-                 << trim_spaces(opt_hdr.substr(opt_hdr.find(':')+1)) << endl;
+                 << trim_spaces(opt_hdr.substr(opt_hdr.find(':') + 1)) << endl;
   }
   else                                                          // must be either to/cc/bcc
-   append_email_header(header, opt_hdr.substr(opt_hdr.find(':')+1), r); // those are append-able
+   append_email_header(header, opt_hdr.substr(opt_hdr.find(':') + 1), r);   // those are append-able
  }
 
  if(sm.from().empty())                                          // -H 'From: ...' is not given
@@ -254,7 +254,7 @@ vector<string> split_by(char dlm, const string &str) {
  vector<string> vs;
 
  auto found = str.find(dlm);
- for(size_t last{0}, found{0}; found != string::npos; last=found+1) {
+ for(size_t last = 0; found != string::npos; last=found + 1) {
   found = str.find(dlm, last);
   string lexeme = trim_spaces(str.substr(last, found-last));
   if(not lexeme.empty())
@@ -287,7 +287,7 @@ void try_recovering_from(SharedResource &r) {
 
 string & trim_trailing_spaces(std::string &str) {
  // trim all trailing spaces
- return str.erase(str.find_last_not_of(SPACES)+1);
+ return str.erase(str.find_last_not_of(SPACES) + 1);
 }
 
 
