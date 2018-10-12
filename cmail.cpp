@@ -7,9 +7,9 @@
 using namespace std;
 
 
-#define VERSION "1.01"
+#define VERSION "1.02"
 
-
+// defined options
 #define OPT_RDT -
 #define OPT_ATT a
 #define OPT_DBG d
@@ -19,6 +19,8 @@ using namespace std;
 #define OPT_USR u
 #define ARG_TO 0
 #define ARG_SRV 1
+
+#define SPACES " \t"
 
 
 // facilitate option materialization
@@ -86,8 +88,8 @@ int main(int argc, char *argv[])
  opt[ARG_SRV].name("smtp").desc("smtp server to connect to").bind("<recover from username>");
  opt.epilog("\n\
 if there are attachments or inputs contain unicode, the mail is sent using\n\
-mime/base64 encoding, otherwise it's sent as plain text\n\n\
-to send attachments only and skip inputs, specify a bare qualifier `-',\n\
+mime/base64 encoding, otherwise it is sent as plain text\n\n\
+to send attachments only and suppress inputs, specify a bare qualifier `-',\n\
 predicated at least one option -" STR(OPT_ATT) " is given\n\n\
 - Option -" STR(OPT_APH) " supports headers: `From', `To', `Cc', `Bcc', `Subject'\n\
   headers should be given one per option and in the following format, e.g.:\n\
@@ -98,8 +100,8 @@ predicated at least one option -" STR(OPT_ATT) " is given\n\n\
 - Argument `to' also may contain multiple recipients (like additive headers in\n\
   option -" STR(OPT_APH) ")\n\
 - Argument `smtp', if not given, is attempted to be recovered from the username\n\
-  (option -" STR(OPT_USR) "): if it's is a fully qualified email, the domain part is extracted\n\
-  and prepended with \"smtp.\"\n\
+  (option -" STR(OPT_USR) ", or header 'From:'): if it's is a fully qualified email, the domain\n\
+  part is extracted and prepended with \"smtp.\"\n\
 - if header -" STR(OPT_APH) " 'From: ...' is missed, it is attempted to be recovered from the\n\
   username (option -" STR(OPT_USR) ")\n\
 - setting a username (option -" STR(OPT_USR) ") requires setting a password (-" STR(OPT_PWD) \
@@ -140,10 +142,11 @@ predicated at least one option -" STR(OPT_ATT) " is given\n\n\
   return e.code() + OFF_CSMTP;
  }
 
- if(sm.rc() == CURLE_OK)
-  { cout << "sending ok" << endl; return RC_OK; }
- cout << "sending error: " << sm.error() << endl;
- return RC_NOK;
+ if(sm.rc() != CURLE_OK)
+  { cout << "sending error: " << sm.error() << endl; return RC_NOK; }
+
+ cout << "sending ok" << endl;
+ return RC_OK;
 }
 
 
@@ -170,7 +173,7 @@ void post_parse(SharedResource &r) {
   if(opt[CHR(OPT_USR)].hits() == 0) {                           // -u is not given
    if(sm.from().empty())                                        // header 'From:' is empty too
     { cerr << "error: username is required but not provided" << endl; exit(RC_MISSUSR); }
-   opt[CHR(OPT_USR)] = sm.from();                               // recover username from 'From'
+   opt[CHR(OPT_USR)] = sm.from().substr(1, sm.from().size()-2); // recover username from 'From'
   }
  }
 
@@ -246,7 +249,7 @@ CurlSmtp::Headers match_header(string hdr_str) {
 
 
 vector<string> split_by(char dlm, const string &str) {
- // split str by dlm and return vector trimmed lexemes; empty lexemes are not recorded
+ // split str by dlm and return vector of trimmed lexemes; empty lexemes are not recorded
  vector<string> vs;
 
  auto found = str.find(dlm);
@@ -283,13 +286,13 @@ void try_recovering_from(SharedResource &r) {
 
 string & trim_trailing_spaces(std::string &str) {
  // trim all trailing spaces
- return str.erase(str.find_last_not_of(" \t")+1);
+ return str.erase(str.find_last_not_of(SPACES)+1);
 }
 
 
 string & trim_heading_spaces(std::string &str) {
  // trim all heading spaces
- return str.erase(0, str.find_first_not_of(" \t"));
+ return str.erase(0, str.find_first_not_of(SPACES));
 }
 
 
