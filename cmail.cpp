@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <iterator>
 #include "lib/getoptions.hpp"
 #include "lib/Curl.hpp"
 

@@ -20,19 +20,19 @@ class DateTime {
     enum Locality { LT, UTC };                                  // LT = Local Time
 
     #define THROWREASON \
-                SpaceOnlySeparatorAllowed, \
-                InvalidDateOrTimeFormat, \
-                InvalidDateFormat, \
-                InvalidTimeFormat, \
-                StampMissing, \
-                BogusDateStamp, \
-                YearSmallerThan1970, \
-                MonthOutOfRange_01_12, \
-                DayOutOfRange_01_31, \
-                SecondsOutOfRange_00_59, \
-                MinutesOutOfRange_00_59, \
-                HoursOutOfRange_00_23, \
-                TrailingSymbolsDisallowed
+                space_only_separator_allowed, \
+                invalid_date_or_time_format, \
+                invalid_date_format, \
+                invalid_time_format, \
+                stamp_missing, \
+                bogus_date_stamp, \
+                year_below_1970, \
+                month_out_of_range_01_12, \
+                day_out_of_range_01_31, \
+                seconds_out_of_range_00_59, \
+                minutes_out_of_range_00_59, \
+                hours_out_of_range_00_23, \
+                trailing_symbols_disallowed
     ENUMSTR(ThrowReason, THROWREASON);
 
     #define MON Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
@@ -129,6 +129,8 @@ class DateTime {
     DateTime &          time_separator(const std::string & s) { ts = s; return *this; }
     const std::string & time_separator(void) const { return ds; }
 
+    EXCEPTIONS(ThrowReason)                                     // see "enums.hpp"
+
  private:
     time_t              stamp_;                                 // [seconds], UTC
 
@@ -162,29 +164,31 @@ std::string DateTime::ts{":"};
 
 
 DateTime & DateTime::set_DateTime(const std::string &str, Locality l) {
+ // str in format: "YYYYMMDD HH:MM:SS"; locality is either LT or UTC
  tm dateTime{0};
  parseDate_(str, dateTime);
- int date{(dateTime.tm_year+1900)*10000+(dateTime.tm_mon+1)*100+dateTime.tm_mday};
+ int date = (dateTime.tm_year + 1900) * 10000 + (dateTime.tm_mon + 1) * 100 + dateTime.tm_mday;
 
- if(str[8] != ' ') throw SpaceOnlySeparatorAllowed;
+ if(str[8] != ' ') throw EXP(space_only_separator_allowed);
  parseTime_(&str[9], dateTime);
 
  if(l == UTC) stamp_ = timegm_portable(& dateTime);
  else stamp_ = mktime(& dateTime);
- if(stamp_ == -1) throw InvalidDateOrTimeFormat;
- if(datestamp() != date) throw BogusDateStamp;
+ if(stamp_ == -1) throw EXP(invalid_date_or_time_format);
+ if(datestamp() != date) throw EXP(bogus_date_stamp);
  return *this;
 }
 
 
 DateTime & DateTime::set_time(const std::string &str, Locality l) {
+ // str in format: "HH:MM:SS"; locality is either LT or UTC
  tm * tmp;
  if(l == UTC) tmp = gmtime(& stamp_);
  else tmp = localtime(& stamp_);
  parseTime_(str, *tmp);
  if(l == UTC) stamp_ = timegm_portable(tmp);
  else stamp_ = mktime(tmp);
- if(stamp_ == -1) throw InvalidTimeFormat;
+ if(stamp_ == -1) throw EXP(invalid_time_format);
  return *this;
 }
 
@@ -198,19 +202,20 @@ DateTime & DateTime::set_time(int hours, int minutes, int seconds, Locality l) {
  tmp->tm_sec = seconds;
  if(l == UTC) stamp_ = timegm_portable(tmp);
  else stamp_ = mktime(tmp);
- if(stamp_ == -1) throw InvalidTimeFormat;
+ if(stamp_ == -1) throw EXP(invalid_time_format);
  return *this;
 }
 
 
 DateTime & DateTime::set_date(const std::string &str, Locality l) {
+ // str in format: "YYYYMMDD"; locality is either LT or UTC
  tm * tmp;
  if(l == UTC) tmp = gmtime(& stamp_);
  else tmp = localtime(& stamp_);
  parseDate_(str, *tmp);
  if(l == UTC) stamp_ = timegm_portable(tmp);
  else stamp_ = mktime(tmp);
- if(stamp_ == -1) throw InvalidDateFormat;
+ if(stamp_ == -1) throw EXP(invalid_date_format);
  return *this;
 }
 
@@ -224,15 +229,13 @@ DateTime & DateTime::set_date(int day, int month, int year, Locality l) {
  tmp->tm_year = year-1900;
  if(l == UTC) stamp_ = timegm_portable(tmp);
  else stamp_ = mktime(tmp);
- if(stamp_ == -1) throw InvalidDateFormat;
+ if(stamp_ == -1) throw EXP(invalid_date_format);
  return *this;
 }
 
 
-// now() is setting epoch seconds (since 0 hour, Jan 1, 1970 in UTC time always.
-// it's universal time.
-// localtime/gmtime/timegm/
 DateTime & DateTime::now(void) {
+ // now() is setting epoch seconds (since 0 hour, Jan 1, 1970 in UTC - it's universal time
  struct timeval tv;
  gettimeofday(&tv, nullptr);
  stamp_ = tv.tv_sec;
@@ -266,6 +269,7 @@ DateTime & DateTime::add_months(long n) {
 
 
 int DateTime::seconds(Locality l) const {
+ // returns seconds part in the stamp
  tm * tmp;
  if(l == UTC) tmp = gmtime(& stamp_);
  else tmp = localtime(& stamp_);
@@ -274,6 +278,7 @@ int DateTime::seconds(Locality l) const {
 
 
 int DateTime::minutes(Locality l) const {
+ // returns minutes part in the stamp
  tm * tmp;
  if(l == UTC) tmp = gmtime(& stamp_);
  else tmp = localtime(& stamp_);
@@ -282,6 +287,7 @@ int DateTime::minutes(Locality l) const {
 
 
 int DateTime::hours(Locality l) const {
+ // returns hours part in the stamp
  tm * tmp;
  if(l == UTC) tmp = gmtime(& stamp_);
  else tmp = localtime(& stamp_);
@@ -290,6 +296,7 @@ int DateTime::hours(Locality l) const {
 
 
 int DateTime::day(Locality l) const {
+ // returns day part in the stamp
  tm * tmp;
  if(l == UTC) tmp = gmtime(& stamp_);
  else tmp = localtime(& stamp_);
@@ -298,6 +305,7 @@ int DateTime::day(Locality l) const {
 
 
 int DateTime::month(Locality l) const {
+ // returns month part in the stamp
  tm * tmp;
  if(l == UTC) tmp = gmtime(& stamp_);
  else tmp = localtime(& stamp_);
@@ -306,6 +314,7 @@ int DateTime::month(Locality l) const {
 
 
 int DateTime::year(Locality l) const {
+ // returns year part in the stamp
  tm * tmp;
  if(l == UTC) tmp = gmtime(& stamp_);
  else tmp = localtime(& stamp_);
@@ -314,6 +323,7 @@ int DateTime::year(Locality l) const {
 
 
 int DateTime::weekday(Locality l) const {
+ // returns weekday of the stamp
  tm * tmp;
  if(l == UTC) tmp = gmtime(& stamp_);
  else tmp = localtime(& stamp_);
@@ -321,6 +331,7 @@ int DateTime::weekday(Locality l) const {
 }
 
 int DateTime::yearday(Locality l) const {
+ // returns day of a year in the stamp
  tm * tmp;
  if(l == UTC) tmp = gmtime(& stamp_);
  else tmp = localtime(& stamp_);
@@ -328,32 +339,36 @@ int DateTime::yearday(Locality l) const {
 }
 
 int DateTime::datestamp(Locality l) const {                     // e.g: 20150131 (year+month+day)
+ // returns date stamp expressed as an integer
  return year(l) * 10000 + month(l)*100 + day(l);
 }
 
 int DateTime::timestamp(Locality l) const {                     // e.g: 93059 (hours+minutes+seconds)
- return hours(l) * 10000 + minutes(l) * 100 + seconds(l);
+  // returns time stamp expressed as an integer
+return hours(l) * 10000 + minutes(l) * 100 + seconds(l);
 }
 
 int DateTime::utc_offset(void) {
+ // returns seconds local time offset from UTC in seconds
  tm * tmp;
  tmp = localtime(& stamp_);
  return tmp->tm_gmtoff;
 }
 
 void DateTime::parseDate_(const std::string &str, tm & dateTime) {
- unsigned y=-1, m=-1, d=-1;                                     // year, month, day
+ // fills dateTime structure tm from string "YYYYMMDD"
+ long y=-1, m=-1, d=-1;                                         // year, month, day
 
- std::stringstream sIn(str);
- sIn.seekg(0) >> d;
- if(d == -1) throw StampMissing;
+ std::stringstream sin(str);
+ sin.seekg(0) >> d;
+ if(d == -1) throw EXP(stamp_missing);
 
  y = d/10000-1900; d %= 10000;
- if(y < 70) throw YearSmallerThan1970;
+ if(y < 70) throw EXP(year_below_1970);
 
  m = d/100-1; d %= 100;
- if(m > 11) throw MonthOutOfRange_01_12;
- if(d < 1 or d > 31) throw DayOutOfRange_01_31;
+ if(m > 11) throw EXP(month_out_of_range_01_12);
+ if(d < 1 or d > 31) throw EXP(day_out_of_range_01_31);
 
  dateTime.tm_year = y;
  dateTime.tm_mon = m;
@@ -362,24 +377,26 @@ void DateTime::parseDate_(const std::string &str, tm & dateTime) {
 
 
 void DateTime::parseTime_(const std::string & str, tm & dateTime) {
- unsigned h=-1, m=-1, s=-1;                                     // hours, mins, secs
+ // fills dateTime structure tm from string "HH:MM:SS"
+ long h=-1, m=-1, s=-1;                                         // hours, mins, secs
  std::string timeStr{str + ':'};
  std::stringstream sin(timeStr);
  sin.seekg(0);
  int so = 0;                                                    // space offset
+
  while(sin.peek() == ' ') { sin.get(); ++so; }
  sin >> h;
- if(h > 23 or sin.tellg() != (2+so)) throw HoursOutOfRange_00_23;
+ if(h > 23 or sin.tellg() != (2+so)) throw EXP(hours_out_of_range_00_23);
 
  sin.ignore(1,':') >> m;
- if(m > 59 or sin.tellg() != (5+so)) throw MinutesOutOfRange_00_59;
+ if(m > 59 or sin.tellg() != (5+so)) throw EXP(minutes_out_of_range_00_59);
 
  sin.ignore(1,':') >> s;
- if(s > 59 or sin.tellg() != (8+so)) throw SecondsOutOfRange_00_59;
+ if(s > 59 or sin.tellg() != (8+so)) throw EXP(seconds_out_of_range_00_59);
 
  char c;
  sin >> c >> c;
- if(c != ':' or not sin.eof()) throw TrailingSymbolsDisallowed;
+ if(c != ':' or not sin.eof()) throw EXP(trailing_symbols_disallowed);
 
  dateTime.tm_hour = h;
  dateTime.tm_min = m;
@@ -388,6 +405,7 @@ void DateTime::parseTime_(const std::string & str, tm & dateTime) {
 
 
 std::string DateTime::time_str(Locality l) const {
+ // return string representing time (HH:MM:SS) from the stamp
  tm * tmp;
  if(l == UTC) tmp = gmtime(& stamp_);
  else tmp = localtime(& stamp_);
@@ -401,6 +419,7 @@ std::string DateTime::time_str(Locality l) const {
 
 
 std::string DateTime::date_str(Locality l) const {
+ // return string representing date (YYYYMMDD) from the stamp
  tm * tmp;
  if(l == UTC) tmp = gmtime(& stamp_);
  else tmp = localtime(& stamp_);
@@ -417,6 +436,7 @@ std::string DateTime::date_str(Locality l) const {
 
 
 std::string DateTime::str(Locality l) const {
+ // return string representing date-time (YYYYMMDD HH:MM:SS) from the stamp
  tm * tmp;
  if(l == UTC) tmp = gmtime(& stamp_);
  else tmp = localtime(& stamp_);
@@ -433,11 +453,6 @@ std::string DateTime::str(Locality l) const {
     << std::setfill('0') << std::setw(2) << tmp->tm_sec;
  return so.str();
 }
-
-
-
-
-
 
 
 
