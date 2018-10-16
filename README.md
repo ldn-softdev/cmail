@@ -34,3 +34,67 @@ here that all downloads go into ~/Downloads folder:
 `
    - `sudo mv cmail /usr/local/bin/`
 
+
+#### help screen:
+```
+bash $ cmail -h
+usage: cmail [-dh] [-H header] [-a attachment] [-p password] [-s subject]
+             [-u username] to [smtp]
+
+An easy utility based on libcurl to send emails from the command line
+Version 1.02, developed by Dmitry Lyssenko (ldn.softdev@gmail.com)
+
+optional arguments:
+ -d             turn on debugs (multiple calls increase verbosity)
+ -h             help screen
+ -H header      append email header
+ -a attachment  attach file
+ -p password    password to use with username to access smtp server
+ -s subject     set email subject
+ -u username    username to access smtp server with
+
+standalone arguments:
+  to            'to' recipient(s)
+  smtp          smtp server to connect to [default: <recover from username>]
+
+if there are attachments or inputs contain unicode, the mail is sent using
+mime/base64 encoding, otherwise it is sent as plain text
+
+to send attachments only and suppress inputs, specify a bare qualifier `-',
+predicated at least one option -a is given
+
+- Option -H supports headers: `From', `To', `Cc', `Bcc', `Subject'
+  headers should be given one per option and in the following format, e.g.:
+   -H 'Subject: this is a subject'
+- Headers `To', `Cc', `Bcc' are additive (multiple arguments could be given,
+  listed over comma), while `From' and `Subject' are overridable (only the last
+  given will be recorded)
+- Argument `to' also may contain multiple recipients (like additive headers in
+  option -H)
+- Argument `smtp', if not given, is attempted to be recovered from the username
+  (option -u, or header 'From:'): if it's is a fully qualified email, the domain
+  part is extracted and prepended with "smtp."
+- if header -H 'From: ...' is missed, it is attempted to be recovered from the
+  username (option -u)
+- setting a username (option -u) requires setting a password (-p) as well
+- a password (-p) requires a username; if the username is not given, it is
+  attempted to be recovered from `-H "From: ..."' hdeader
+- specifying a username/password automatically implies using `smtps://' protocol
+  (instead of default `smtp://')
+- subject could be passed either via -s or via -H 'Subject: ...'; the latter
+  option overrides the former one
+
+bash $ 
+```
+
+
+#### CAVEAT:
+The obvious caveat using this tool is that it requires passing a password as a parameter (if you work with smpts).
+Mac os let you working around this limiation by using `securilty` utility, which would let you to extracting the
+password from the *Keychain Access* vault and passsing it to the cmail, e.g.:
+```
+echo "test mail" | cmail -s "email subject" -u some_user@gmail.com -p `security find-internet-password -wa "some_user@gmail.com"` another_user@gmail.com
+```
+
+
+
