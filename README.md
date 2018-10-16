@@ -6,12 +6,12 @@ cli utility to send emails from command line (plain text/mime/attachments) w/o a
   - works over `smtp` and `smtps`
 
 
-#### MacOS precompiled binaries are available for download:
+#### Linux and MacOS precompiled binaries are available for download:
 - [macOS 64 bit](https://github.com/ldn-softdev/cmail/raw/master/cmail-64.v.1.02)
 - [macOS 32 bit](https://github.com/ldn-softdev/cmail/raw/master/cmail-32.v.1.02)
+- Linux (to be published)
 
-
-#### Compile and install instructions:
+#### Compile and install instructions (for Mac os):
 bulding cmail requires also compiling curl (as mac os x's distribution is not good enough (yet) to support mime). Thus assuming
 here that all downloads go into ~/Downloads folder:
   1. Download [curl-7.61.1.zip](https://curl.haxx.se/download/curl-7.61.1.zip) (or higher)
