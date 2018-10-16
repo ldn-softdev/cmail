@@ -12,7 +12,7 @@ cli utility to send emails from command line (plain text/mime/attachments) w/o a
 - Linux (to be published)
 
 #### Compile and install instructions (for Mac os):
-bulding cmail requires also compiling curl (as mac os x's distribution is not good enough (yet) to support mime). Thus assuming
+building cmail requires also compiling curl (as mac os x's distribution is not good enough (yet) to support mime). Thus assuming
 here that all downloads go into ~/Downloads folder:
   1. Download [curl-7.61.1.zip](https://curl.haxx.se/download/curl-7.61.1.zip) (or higher)
   2. open terminal and run:
@@ -78,7 +78,7 @@ predicated at least one option -a is given
   username (option -u)
 - setting a username (option -u) requires setting a password (-p) as well
 - a password (-p) requires a username; if the username is not given, it is
-  attempted to be recovered from `-H "From: ..."' hdeader
+  attempted to be recovered from `-H "From: ..."' header
 - specifying a username/password automatically implies using `smtps://' protocol
   (instead of default `smtp://')
 - subject could be passed either via -s or via -H 'Subject: ...'; the latter
@@ -90,8 +90,8 @@ bash $
 
 #### CAVEAT:
 The obvious caveat using this tool is that it requires passing a password as a parameter (if you work with smpts).
-Mac os let you working around this limiation by using `security` utility, which would let you to extracting the
-password from the *Keychain Access* vault and passsing it to the cmail, e.g.:
+Mac os let you working around this limitation by using `security` utility, which would let you to extracting the
+password from the *Keychain Access* vault and passing it to the cmail, e.g.:
 ```
 bash $ echo "test mail" | cmail -s "email subject" -u user@some_mailer.com -p `security find-internet-password -wa "user@some_mailer.com"` another_user@somewhere_else.com
 ```
