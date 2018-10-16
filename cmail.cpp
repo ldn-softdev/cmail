@@ -108,7 +108,7 @@ predicated at least one option -" STR(OPT_ATT) " is given\n\n\
 - setting a username (option -" STR(OPT_USR) ") requires setting a password (-" STR(OPT_PWD) \
   ") as well\n\
 - a password (-" STR(OPT_PWD) ") requires a username; if the username is not given, it is\n\
-  attempted to be recovered from `-" STR(OPT_APH) " \"From: ...\"' hdeader\n\
+  attempted to be recovered from `-" STR(OPT_APH) " \"From: ...\"' header\n\
 - specifying a username/password automatically implies using `smtps://' protocol\n\
   (instead of default `smtp://')\n\
 - subject could be passed either via -" STR(OPT_SBJ) " or via -" STR(OPT_APH)
@@ -144,7 +144,7 @@ predicated at least one option -" STR(OPT_ATT) " is given\n\n\
  }
 
  if(sm.rc() != CURLE_OK)
-  { cout << "sending error: " << sm.error() << endl; return RC_NOK; }
+  { cerr << "sending error: " << sm.error() << endl; return RC_NOK; }
 
  cout << "sending ok" << endl;
  return RC_OK;

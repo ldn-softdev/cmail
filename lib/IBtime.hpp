@@ -96,15 +96,15 @@ class DateTime {
     int                 day(Locality l=LT) const;               // day of month (1 - 31)
     int                 month(Locality l=LT) const;             // month of year (1 - 12)
     const char *        month_c_str(Locality l=LT)
-                         const { return Mon_str[month(l)-1]; }
+                         const { return ENUMS(Mon, month(l)-1); }
     const char *        month_c_string(Locality l=LT) const
-                         { auto m = month(l)-1; return m==may? Mon_str[may]: Month_str[m]; }
+                         { auto m = month(l)-1; return m==may? ENUMS(Mon, may): ENUMS(Month, m); }
     int                 year(Locality l=LT) const;              // year
     int                 weekday(Locality l=LT) const;           // day of week (Sunday = 0)
     const char *        weekday_c_str(Locality l=LT) const
-                         { return Weekday_str[weekday(l)]; }
+                         { return ENUMS(Weekday, weekday(l)); }
     const char *        weekday_c_string(Locality l=LT) const
-                         { return FullWeekday_str[weekday(l)]; }
+                         { return ENUMS(FullWeekday, weekday(l)); }
     int                 yearday(Locality l=LT) const;           // day of year (0 - 365)
     int                 datestamp(Locality l=LT) const;         // e.g: 20150131 (year+month+day)
     int                 timestamp(Locality l=LT) const;         // e.g: 93059 (hours+minutes+seconds)
@@ -429,7 +429,7 @@ std::string DateTime::date_str(Locality l) const {
  if( ds.empty() )
   so << std::setfill('0') << std::setw(2) << tmp->tm_mon+1 << ds;
  else
-  so << Mon_str[tmp->tm_mon] << ds;
+  so << ENUMS(Mon, tmp->tm_mon) << ds;
  so << std::setfill('0') << std::setw(2) << tmp->tm_mday;
  return so.str();
 }
@@ -446,7 +446,7 @@ std::string DateTime::str(Locality l) const {
  if( ds.empty() )
   so << std::setfill('0') << std::setw(2) << tmp->tm_mon+1 << ds;
  else
-  so << Mon_str[tmp->tm_mon] << ds;
+  so << ENUMS(Mon, tmp->tm_mon) << ds;
  so << std::setfill('0') << std::setw(2) << tmp->tm_mday << ' '
     << std::setfill('0') << std::setw(2) << tmp->tm_hour << ts
     << std::setfill('0') << std::setw(2) << tmp->tm_min << ts
