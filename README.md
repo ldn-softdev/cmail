@@ -7,8 +7,8 @@ cli utility to send emails from command line (plain text/mime/attachments) w/o a
 
 
 #### Linux and MacOS precompiled binaries are available for download:
-- [macOS 64 bit](https://github.com/ldn-softdev/cmail/raw/master/cmail-64.v.1.02)
-- [macOS 32 bit](https://github.com/ldn-softdev/cmail/raw/master/cmail-32.v.1.02)
+- [macOS 64 bit](https://github.com/ldn-softdev/cmail/raw/master/cmail-macos-64.v.1.02)
+- [macOS 32 bit](https://github.com/ldn-softdev/cmail/raw/master/cmail-macos-32.v.1.02)
 - Linux (to be published)
 
 #### Compile and install instructions (for Mac os):
