@@ -120,7 +120,7 @@ predicated at least one option -" STR(OPT_ATT) " is given\n\n\
  catch(Getopt::stdException & e)
   { opt.usage(); return e.code() + OFF_GETOPT; }
 
- DBG().level(opt[CHR(OPT_DBG)])
+ DBG().level(opt[CHR(OPT_DBG)].hits())
       .use_ostream(cerr)
       .increment(+1, sm, -1);
 
@@ -155,7 +155,7 @@ predicated at least one option -" STR(OPT_ATT) " is given\n\n\
 void post_parse(SharedResource &r) {
  // check options requirements & compatibility, setup headers in CurlSmtp
  REVEAL(r, opt, sm, DBG())
- DBG(0) DOUT() << "begin processing options"<< endl;
+ DBG(0) DOUT() << "begin processing options" << endl;
 
  append_email_header(CurlSmtp::To, opt[ARG_TO].str(), r);       // append header 'To' from arg[0]
  if(sm.to().empty())
@@ -201,7 +201,7 @@ void append_email_header(CurlSmtp::Headers hdr, string hdr_str, SharedResource &
  REVEAL(r, sm, DBG())
 
  // append header string to additive header (to, cc, bcc)
- for(const auto & email: split_by(',', move(hdr_str)))
+ for(const auto & email: split_by(',', hdr_str))
   if(email.find("@") != string::npos) {
    DBG(1) DOUT() << ENUMS(CurlSmtp::Headers, hdr) << ": " << email << endl;
    sm.add_header(hdr, email);
@@ -253,8 +253,7 @@ vector<string> split_by(char dlm, const string &str) {
  // split str by dlm and return vector of trimmed lexemes; empty lexemes are not recorded
  vector<string> vs;
 
- auto found = str.find(dlm);
- for(size_t last = 0; found != string::npos; last=found + 1) {
+ for(size_t last = 0, found = 0; found != string::npos; last=found + 1) {
   found = str.find(dlm, last);
   string lexeme = trim_spaces(str.substr(last, found-last));
   if(not lexeme.empty())
