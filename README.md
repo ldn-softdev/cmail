@@ -93,7 +93,7 @@ The obvious caveat using this tool is that it requires passing a password as a p
 Mac os let you working around this limiation by using `securilty` utility, which would let you to extracting the
 password from the *Keychain Access* vault and passsing it to the cmail, e.g.:
 ```
-echo "test mail" | cmail -s "email subject" -u some_user@gmail.com -p `security find-internet-password -wa "some_user@gmail.com"` another_user@gmail.com
+echo "test mail" | cmail -s "email subject" -u user@some_mailer.com -p `security find-internet-password -wa "user@some_mailer.com"` another_user@somewhere_else.com
 ```
 
 
