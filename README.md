@@ -30,7 +30,7 @@ here that all downloads go into ~/Downloads folder:
    - `cd ~/Downloads`
    - `unzip cmail-master.zip`
    - `cd cmail-master`
-   - `c++ -o cmail -std=c++14 -I ~/Downloads/curl-7.61.1/include ~/Downloads/curl-7.61.1/lib/.libs/libcurl.a -framework Foundation -lz -framework Security cmail.cpp
+   - `c++ -o cmail -std=c++14 -I ~/Downloads/curl-7.61.1/include ~/Downloads/curl-7.61.1/lib/.libs/libcurl.a -framework Security cmail.cpp
 `
    - `sudo mv cmail /usr/local/bin/`
 
